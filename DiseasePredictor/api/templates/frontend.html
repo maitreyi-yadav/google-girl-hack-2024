@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Recommended Doctors</title>
+    <style>
+        .loader {
+            border: 5px solid #f3f3f3; /* Light grey */
+            border-top: 5px solid #4285F4; /* Google Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            margin-top: 20px;
+            display: none; /* Initially hidden */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        body {
+            margin: 0px auto;
+            padding: 0px 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        #navbar {
+            background-color: #FBBc05;
+            /* Google Blue */
+            overflow: hidden;
+            padding: 10px 20px;
+            color: white;
+            text-align: center;
+        }
+
+        #navbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        #symptoms-container {
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        #symptoms-container label {
+            font-weight: bold;
+        }
+
+        #symptoms-container input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+        }
+
+        #symptoms-container button {
+            padding: 8px 20px;
+            background-color: #ea4355;
+            /* Google Blue */
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #symptoms-container button:hover {
+            background-color: #357AE8;
+            /* Google Dark Blue */
+        }
+
+        #selected-symptoms {
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .table-container {
+            margin: 20px auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            /* background-color: #4285F4; */
+            /* Google Blue */
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        #diseases-container h3,
+        #doctors-container h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .disease{
+            background-color: #4285F4;
+
+        }
+        .doctor{
+            background-color: #34a853;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div id="navbar" style="color: black;">
+        <h1>HealthNex</h1>
+        <h4>Google Girl Hackathon 2024 Submission- <b>Maitreyi Yadav</b></h4>
+    </div>
+
+    <div id="symptoms-container">
+        <label for="symptoms">Enter Symptoms:</label>
+        <input type="text" id="symptoms" name="symptoms">
+        <button onclick="getRecommendedDoctors()">Submit</button>
+        <div class="loader" id="loader"></div>
+    </div>
+    <div id="selected-symptoms"></div>
+    <div id="diseases-container">
+    </div>
+    <div id="doctors-container">
+    </div>
+
+    <script>
+        function getRecommendedDoctors() {
+            const symptoms = document.getElementById('symptoms').value;
+            displaySelectedSymptoms(symptoms);
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+
+            fetch('http://127.0.0.1:8000/api/recommend-doc', {
+                method: 'POST',
+                body: JSON.stringify({ "symptoms": symptoms }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loader
+                    loader.style.display = 'none';
+
+                    displayDiseases(data.illness);
+                    displayDoctors(data.doctors);
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function displaySelectedSymptoms(symptoms) {
+            const symptomsContainer = document.getElementById('selected-symptoms');
+            symptomsContainer.innerHTML = `<p><b>Selected Symptoms:</b> ${symptoms}</p>`;
+        }
+
+        function displayDiseases(diseases) {
+
+            const table = document.createElement('table');
+            const headerRow = table.insertRow();
+            headerRow.className = 'disease';
+            const headerCell = document.createElement('th');
+            const headerCell2 = document.createElement('th');
+            headerCell.textContent = 'Possible Diseases';
+            headerRow.appendChild(headerCell);
+            headerCell2.textContent = 'Recommended specialist to be consulted';
+            headerRow.appendChild(headerCell2);
+
+            diseases.forEach(disease => {
+                const row = table.insertRow();
+                for (const key in disease) {
+                    const keyCell = row.insertCell();
+                    keyCell.textContent = key.replace('_', ' '); // Displaying key with '_' replaced by space
+                    const valueCell = row.insertCell();
+                    valueCell.textContent = disease[key];
+                }
+            });
+
+
+            document.getElementById('diseases-container').innerHTML = '';
+            const heading = document.createElement('h3');
+            heading.textContent = 'You might have the following diseases:';
+            document.getElementById('diseases-container').appendChild(heading);
+            document.getElementById('diseases-container').appendChild(table);
+        }
+
+        function displayDoctors(doctors) {
+            const table = document.createElement('table');
+
+            // Create table header
+            const headerRow = table.insertRow();
+            headerRow.className = 'doctor';
+            for (const key in doctors[0][0]) {
+                const headerCell = document.createElement('th');
+                headerCell.textContent = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+                headerRow.appendChild(headerCell);
+            }
+
+            // Create table rows
+            doctors.flat().forEach(doctor => {
+                const row = table.insertRow();
+                for (const key in doctor) {
+                    const cell = row.insertCell();
+                    cell.textContent = doctor[key];
+                }
+            });
+
+            document.getElementById('doctors-container').innerHTML = '';
+            const heading = document.createElement('h3');
+            heading.textContent = 'Here are some doctors you might consult:';
+            document.getElementById('diseases-container').appendChild(heading);
+            document.getElementById('doctors-container').appendChild(table);
+        }
+    </script>
+</body>
+
+</html>
