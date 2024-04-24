@@ -25,7 +25,7 @@
 
         body {
             margin: 0px auto;
-            padding: 0px 20px;
+            /* padding: 0px 20px; */
             font-family: Arial, sans-serif;
         }
 
@@ -83,8 +83,11 @@
         }
 
         table {
-            width: 100%;
+            width: 90%;
             border-collapse: collapse;
+            /* display: flex; */
+            /* align-items: center; */
+            margin: auto;
         }
 
         th,
@@ -111,14 +114,21 @@
         #doctors-container h3 {
             margin-top: 20px;
             margin-bottom: 10px;
+            margin-left: 40px;
         }
-        .disease{
+.disease{
             background-color: #4285F4;
 
         }
-        .doctor{
+.doctor{
             background-color: #34a853;
 
+        }
+
+        .error-message {
+            color: red;
+            font-size: 18px;
+            text-align: center;
         }
     </style>
 </head>
@@ -155,20 +165,35 @@
                     'Content-Type': 'application/json'
                 }
             })
-                .then(response => response.json())
-                .then(data => {
+                .then(response => {
                     // Hide loader
                     loader.style.display = 'none';
 
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Insufficient information to find a doctor. Please try with more detail, using simple medical illness words.');
+                    }
+                })
+                .then(data => {
                     displayDiseases(data.illness);
                     displayDoctors(data.doctors);
                 })
-                .catch(error => console.error('Error fetching data:', error));
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    displayError(error.message);
+                });
         }
+
+        function displayError(message) {
+            const errorContainer = document.getElementById('diseases-container');
+            errorContainer.innerHTML = <p class="error-message">${message}</p>;
+        }
+
 
         function displaySelectedSymptoms(symptoms) {
             const symptomsContainer = document.getElementById('selected-symptoms');
-            symptomsContainer.innerHTML = `<p><b>Selected Symptoms:</b> ${symptoms}</p>`;
+            symptomsContainer.innerHTML = <p><b>Selected Symptoms:</b> ${symptoms}</p>;
         }
 
         function displayDiseases(diseases) {
@@ -187,7 +212,7 @@
                 const row = table.insertRow();
                 for (const key in disease) {
                     const keyCell = row.insertCell();
-                    keyCell.textContent = key.replace('_', ' '); // Displaying key with '_' replaced by space
+                    keyCell.textContent = key.replace('', ' '); // Displaying key with '' replaced by space
                     const valueCell = row.insertCell();
                     valueCell.textContent = disease[key];
                 }
