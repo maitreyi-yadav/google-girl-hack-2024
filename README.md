@@ -20,8 +20,10 @@ tailored to their specific symptoms and preferences, facilitated by the integrat
 processing.
 
 ## Sample Project images
+
 ![alt text](HealthNex_img1.png)
 ![alt text](HealthNex_img2.png)
+
 ## How to run-
 
 ### 1. Frontend
@@ -31,18 +33,21 @@ FRONTEND- run python server as mentioned below, and open http://localhost:8000/
 ### 2. REST API
 
 API- Send POST Request to this endpoint
-`   http://localhost:8000/api/recommend-doc
-  `
+`  http://localhost:8000/api/recommend-doc
+ `
 
 - Sample Input
-  
+
+```
   {
       "symptoms" : "leg pain with difficulty to walk"
   }
-  
+```
+
 - Sample Output
 
-  `{
+```
+{
   "data": [
       {
           "Osteoarthristis": "Rheumatologist"
@@ -89,10 +94,11 @@ API- Send POST Request to this endpoint
           },
       ]
   ]
-  }
-  `
+}
+```
 
 ## To run this on local machine
+
 Ensure that python is installed on your machine.
 
 Clone the repository and cd in the root directory of repository.
@@ -105,4 +111,3 @@ Clone the repository and cd in the root directory of repository.
 6. python manage.py runserver 8000
 
 Now either use POSTMAN to test the Rest API, or open localhost:8000/.
-
